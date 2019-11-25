@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	go_graphql "go-graphql"
-	"go-graphql/database"
 	"log"
 	"net/http"
 	"os"
+
+	go_graphql "github.com/go-graphql"
+	"github.com/go-graphql/database"
 
 	"github.com/99designs/gqlgen/handler"
 )
