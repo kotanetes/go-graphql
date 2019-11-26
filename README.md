@@ -1,7 +1,7 @@
 go-graphql
 ---
 
-  GraphQL server example using Golang and MongoDb as Backend.
+  GraphQL server example using Golang and MongoDb as backend.
   
   details:
   - used package by 99designs that generates boilerplate code.
