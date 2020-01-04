@@ -1,7 +1,7 @@
 #!bin/sh -e
 
 #build docker image from dockerfile
-docker build -t go-graphql:build -f dockerfile .
+docker build -t go-graphql:build -f dockerfile.build .
 #create container 
 docker container create --name cont-extract go-graphql:build
 #copy app from container to work space
