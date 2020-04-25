@@ -9,7 +9,8 @@ type Teacher {
 }
 
 type Query {
-  teacher: [Teacher!]!
+  teachers: [Teacher!]!
+  teacher(firstName: String!): Teacher
 }
 
 input NewTodo {

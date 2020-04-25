@@ -42,7 +42,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Query struct {
-		Teacher func(childComplexity int) int
+		Teacher  func(childComplexity int, firstName string) int
+		Teachers func(childComplexity int) int
 	}
 
 	Teacher struct {
@@ -53,7 +54,8 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	Teacher(ctx context.Context) ([]*Teacher, error)
+	Teachers(ctx context.Context) ([]*Teacher, error)
+	Teacher(ctx context.Context, firstName string) (*Teacher, error)
 }
 
 type executableSchema struct {
@@ -76,7 +78,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Teacher(childComplexity), true
+		args, err := ec.field_Query_teacher_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Teacher(childComplexity, args["firstName"].(string)), true
+
+	case "Query.teachers":
+		if e.complexity.Query.Teachers == nil {
+			break
+		}
+
+		return e.complexity.Query.Teachers(childComplexity), true
 
 	case "Teacher.firstName":
 		if e.complexity.Teacher.FirstName == nil {
@@ -159,7 +173,8 @@ type Teacher {
 }
 
 type Query {
-  teacher: [Teacher!]!
+  teachers: [Teacher!]!
+  teacher(firstName: String!): Teacher
 }
 
 input NewTodo {
@@ -184,6 +199,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_teacher_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["firstName"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["firstName"] = arg0
 	return args, nil
 }
 
@@ -223,7 +252,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Query_teacher(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_teachers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() {
 		if r := recover(); r != nil {
@@ -242,7 +271,7 @@ func (ec *executionContext) _Query_teacher(ctx context.Context, field graphql.Co
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Teacher(rctx)
+		return ec.resolvers.Query().Teachers(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -258,6 +287,47 @@ func (ec *executionContext) _Query_teacher(ctx context.Context, field graphql.Co
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNTeacher2ᚕᚖgithubᚗcomᚋgoᚑgraphqlᚐTeacher(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_teacher(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+		ec.Tracer.EndFieldExecution(ctx)
+	}()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_teacher_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Teacher(rctx, args["firstName"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Teacher)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOTeacher2ᚖgithubᚗcomᚋgoᚑgraphqlᚐTeacher(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1644,6 +1714,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "teachers":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_teachers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "teacher":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -1653,9 +1737,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_teacher(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			})
 		case "__type":
@@ -2304,6 +2385,17 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOTeacher2githubᚗcomᚋgoᚑgraphqlᚐTeacher(ctx context.Context, sel ast.SelectionSet, v Teacher) graphql.Marshaler {
+	return ec._Teacher(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTeacher2ᚖgithubᚗcomᚋgoᚑgraphqlᚐTeacher(ctx context.Context, sel ast.SelectionSet, v *Teacher) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Teacher(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

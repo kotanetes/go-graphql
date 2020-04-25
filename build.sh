@@ -7,7 +7,7 @@ docker container create --name cont-extract go-graphql:build
 #copy app from container to work space
 docker container cp cont-extract:/go-graphql/app ./app
 #build slim image
-docker build -t go-graphql:latest -f dockerfile.release .
+docker build -t krishkota/go-graphql:latest -f dockerfile.release .
 #remove docker container
 docker rm cont-extract
 #remove build image
