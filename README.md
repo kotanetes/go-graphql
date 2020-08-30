@@ -22,5 +22,10 @@ go-graphql
       ```
    - How to test or execute query?
       - server should be up and running on port 9090
+        ![image](screenshots/localhost.png)
       - playground lists the types of queries available with the service followed by schema/json that returns.
+        ![image](screenshots/available-queries.png)
       - here is the query examples
+        ![image](screenshots/teachers_all.png)
+        ![image](screenshots/teachers_selected.png)
+        ![image](screenshots/teacher_query.png)
